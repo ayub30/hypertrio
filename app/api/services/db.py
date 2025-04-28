@@ -12,4 +12,5 @@ sessions_collection = db["Sessions"]
 workouts_collection = db["Workouts"]
 macros_collection = db["Macros"]
 completed_workouts_collection = db["CompletedWorkouts"]
+calories_collection = db["Calories"]
 

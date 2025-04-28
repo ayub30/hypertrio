@@ -4,86 +4,89 @@ import { useSession } from 'next-auth/react';
 import { RestaurantMenu, Add, Delete } from '@mui/icons-material';
 import { useToast } from './use-toast';
 
-interface CalorieEntry {
-    id: string;
-    food: string;
+interface FoodEntry {
+    name: string;
     calories: number;
-    timestamp: Date;
+    timestamp: string;
+}
+
+interface DayEntry {
+    _id: string;
+    user_id: string;
+    date: string;
+    food: FoodEntry[];
+    total_calories: number;
+    calorie_goal: number;
 }
 
 export default function CalorieLogger() {
     const { data: session } = useSession();
     const { toast } = useToast();
-    const [entries, setEntries] = useState<CalorieEntry[]>([]);
+    const [todayEntry, setTodayEntry] = useState<DayEntry | null>(null);
     const [newFood, setNewFood] = useState('');
     const [newCalories, setNewCalories] = useState('');
-    const [calorieGoal, setCalorieGoal] = useState(2000);
 
-    useEffect(() => {
-        const fetchCalorieGoal = async () => {
-            try {
-                if (!session?.user?.id) return;
-                const response = await fetch(`http://localhost:8000/auth/user/${session.user.id}`);
-                if (!response.ok) throw new Error('Failed to fetch user data');
-                const data = await response.json();
-                if (data.calorie_goal) {
-                    setCalorieGoal(data.calorie_goal);
-                }
-            } catch (error) {
-                console.error('Error fetching calorie goal:', error);
-            }
-        };
-
-        fetchCalorieGoal();
-    }, [session]);
-
-    const handleAddEntry = () => {
-        if (!newFood || !newCalories) return;
-
-        const newEntry: CalorieEntry = {
-            id: Date.now().toString(),
-            food: newFood,
-            calories: parseInt(newCalories),
-            timestamp: new Date()
-        };
-
-        setEntries([...entries, newEntry]);
-        setNewFood('');
-        setNewCalories('');
-    };
-
-    const handleDeleteEntry = (id: string) => {
-        setEntries(entries.filter(entry => entry.id !== id));
-    };
-
-    const handleCalorieGoal = async (calories: number) => {
-        if (!session?.user?.id) return;
-        
+    // Fetch today's entries
+    const fetchTodayEntries = async () => {
         try {
-            const response = await fetch(`http://localhost:8000/auth/user/${session.user.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ calorie_goal: calories }),
-            });
-
-            if (!response.ok) throw new Error('Failed to update calorie goal');
-            
-            setCalorieGoal(calories);
-            toast({
-                title: 'Success',
-                description: 'Calorie goal updated',
-            });
+            if (!session?.user?.id) return;
+            const response = await fetch(`http://localhost:8000/calories/today/${session.user.id}`);
+            if (!response.ok) throw new Error('Failed to fetch today\'s entries');
+            const data = await response.json();
+            setTodayEntry(data);
         } catch (error) {
-            console.error('Error updating calorie goal:', error);
+            console.error('Error fetching entries:', error);
             toast({
                 title: 'Error',
-                description: 'Failed to update calorie goal',
+                description: 'Failed to fetch today\'s entries',
                 variant: 'destructive',
             });
         }
-    }
+    };
 
-    const totalCalories = entries.reduce((sum, entry) => sum + entry.calories, 0);
+    useEffect(() => {
+        fetchTodayEntries();
+    }, [session]);
+
+    const handleAddEntry = async () => {
+        if (!newFood || !newCalories || !session?.user?.id) return;
+
+        try {
+            const response = await fetch(`http://localhost:8000/calories/log/${session.user.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    food: newFood,
+                    calories: parseInt(newCalories)
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to add food entry');
+            
+            // Refresh entries
+            await fetchTodayEntries();
+            
+            // Clear inputs
+            setNewFood('');
+            setNewCalories('');
+            
+            toast({
+                title: 'Success',
+                description: 'Food entry added',
+            });
+        } catch (error) {
+            console.error('Error adding food entry:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to add food entry',
+                variant: 'destructive',
+            });
+        }
+    };
+
+    if (!session?.user) {
+        return <div>Please sign in to use the calorie logger</div>;
+    }
 
     return (
         <div className="flex flex-col w-full max-w-3xl mx-auto p-6 gap-6">
@@ -95,18 +98,9 @@ export default function CalorieLogger() {
                 <div className="stats shadow">
                     <div className="stat">
                         <div className="stat-title">Total Calories Today</div>
-                        <div className="stat-value text-primary">{totalCalories}</div>
-                        <div className="stat-desc flex items-center gap-2">
-                            Target: 
-                            <input 
-                                type="number" 
-                                className="input input-bordered input-sm w-20" 
-                                value={calorieGoal} 
-                                onChange={(e) => handleCalorieGoal(parseInt(e.target.value))}
-                                min="0"
-                                step="100"
-                            /> 
-                            kcal
+                        <div className="stat-value text-primary">{todayEntry?.total_calories || 0}</div>
+                        <div className="stat-desc">
+                            Target: {todayEntry?.calorie_goal || 0} kcal
                         </div>
                     </div>
                 </div>
@@ -126,9 +120,10 @@ export default function CalorieLogger() {
                     className="input input-bordered w-32 text-base-content"
                     value={newCalories}
                     onChange={(e) => setNewCalories(e.target.value)}
+                    min="0"
                 />
-                <button 
-                    className="btn btn-primary" 
+                <button
+                    className="btn btn-primary"
                     onClick={handleAddEntry}
                     disabled={!newFood || !newCalories}
                 >
@@ -138,32 +133,24 @@ export default function CalorieLogger() {
             </div>
 
             <div className="flex flex-col gap-2">
-                {entries.length === 0 ? (
-                    <div className="text-center text-gray-500 my-8">
-                        No entries yet. Add your first meal!
+                {!todayEntry?.food.length ? (
+                    <div className="text-center text-base-content/60">
+                        No entries yet
                     </div>
                 ) : (
-                    entries.map(entry => (
-                        <div 
-                            key={entry.id} 
+                    todayEntry.food.map((entry, index) => (
+                        <div
+                            key={index}
                             className="flex items-center justify-between p-4 bg-base-200 rounded-lg"
                         >
-                            <div className="flex flex-col">
-                                <span className="font-medium">{entry.food}</span>
-                                <span className="text-sm text-gray-500">
-                                    {entry.timestamp.toLocaleTimeString()}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-lg font-bold">
-                                    {entry.calories} kcal
-                                </span>
-                                <button 
-                                    className="btn btn-ghost btn-sm"
-                                    onClick={() => handleDeleteEntry(entry.id)}
-                                >
-                                    <Delete className="text-error" />
-                                </button>
+                            <div className="flex-1">
+                                <div className="font-medium">{entry.name}</div>
+                                <div className="text-sm text-base-content/60">
+                                    {entry.calories} calories
+                                </div>
+                                <div className="text-xs text-base-content/40">
+                                    {new Date(entry.timestamp).toLocaleTimeString()}
+                                </div>
                             </div>
                         </div>
                     ))

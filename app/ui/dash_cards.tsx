@@ -75,6 +75,28 @@ export function MessageProgressCard() {
 
 export function CalorieTrackingCard() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const [todayCalories, setTodayCalories] = useState<{ total_calories: number; calorie_goal: number } | null>(null);
+
+  useEffect(() => {
+    const fetchTodayCalories = async () => {
+      try {
+        if (!session?.user?.id) return;
+        const response = await fetch(`http://localhost:8000/calories/today/${session.user.id}`);
+        if (!response.ok) throw new Error('Failed to fetch today\'s calories');
+        const data = await response.json();
+        setTodayCalories(data);
+      } catch (error) {
+        console.error('Error fetching today\'s calories:', error);
+      }
+    };
+
+    fetchTodayCalories();
+    // Refresh every minute
+    const interval = setInterval(fetchTodayCalories, 60000);
+    return () => clearInterval(interval);
+  }, [session]);
+
   const redirectCalories = () => {
     router.push('dashboard/calorie_log');
   };
@@ -83,8 +105,8 @@ export function CalorieTrackingCard() {
     <DashCard
       title="Calorie Tracking"
       description="Daily calorie goal progress"
-      value={1850}
-      max={2200}
+      value={todayCalories?.total_calories || 0}
+      max={todayCalories?.calorie_goal || 2000}
       icon={<Flame className="h-5 w-5 text-primary" />}
       buttonFunction={redirectCalories}
       buttonText="Log Calories"

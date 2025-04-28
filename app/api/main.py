@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import auth, workouts
+from routes import auth, workouts, calories
 
 app = FastAPI()
 
@@ -14,6 +14,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/auth")
 app.include_router(workouts.router, prefix="/workouts")
+app.include_router(calories.router, prefix="/calories")
 
 
 @app.get("/")
