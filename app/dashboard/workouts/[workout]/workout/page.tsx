@@ -95,6 +95,8 @@ export default function WorkoutPage() {
             <div className="sticky bottom-0 w-full p-4 bg-base-100 border-t border-base-300">
                 <div className="flex justify-end mr-8">
                     <button 
+                        id="finish-workout-button"
+                        data-testid="finish-workout-button"
                         className="btn btn-primary w-fit px-8 rounded-md hover:scale-105 transition-transform"
                         onClick={handleFinishWorkout}
                     >

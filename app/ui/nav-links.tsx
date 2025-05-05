@@ -76,10 +76,14 @@ export default function NavLinks() {
         <div className="menu p-4 w-full ">
             {currentLinks.map((link) => {
     const isLogout = link.label === "Logout";
+    // Create a test ID based on the link label
+    const testId = `nav-${link.label.toLowerCase().replace(' ', '-')}`;
 
     return (
         <button
             key={link.href}
+            id={testId}
+            data-testid={testId}
             onClick={() => {
                 if (isLogout) {
                     signOut({ callbackUrl: "/login" }); // will remove session & redirect

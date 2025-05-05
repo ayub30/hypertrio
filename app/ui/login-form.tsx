@@ -86,7 +86,8 @@ export default function LoginForm({
                   </label>
                   <input 
                     type="text" 
-                    id="name" 
+                    id="name-input" 
+                    data-testid="name-input"
                     className="input input-bordered w-full" 
                     required 
                     value={name}
@@ -95,18 +96,20 @@ export default function LoginForm({
                   />
                 </div>
               )}
-              <div className="form-control">
-                <label htmlFor="email" className="label">
-                  <span className="label-text">Email</span>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="email" className="text-sm font-medium text-base-content">
+                  Email
                 </label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  placeholder="m@example.com" 
-                  className="input input-bordered w-full" 
-                  required 
+                <input
+                  type="email"
+                  name="email"
+                  id="email-input"
+                  data-testid="email-input"
+                  placeholder="Enter your email"
+                  className="input input-bordered w-full"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
                   disabled={loading}
                 />
               </div>
@@ -115,7 +118,8 @@ export default function LoginForm({
                   <span className="label-text">Password</span>
                 </label>
                 <input 
-                  id="password" 
+                  id="password-input" 
+                  data-testid="password-input"
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -129,7 +133,8 @@ export default function LoginForm({
                       <span className="label-text">Confirm Password</span>
                     </label>
                     <input 
-                      id="confirmPassword" 
+                      id="confirm-password-input" 
+                      data-testid="confirm-password-input"
                       type="password" 
                       className="input input-bordered w-full" 
                       required 
@@ -149,6 +154,8 @@ export default function LoginForm({
             <div className="flex flex-col gap-2 mt-6">
               <button
                 type="submit"
+                id={register ? "register-button" : "login-button"}
+                data-testid={register ? "register-button" : "login-button"}
                 className="btn btn-primary w-full"
                 disabled={loading}
               >
@@ -180,14 +187,26 @@ export default function LoginForm({
               {register ? (
                 <div className="mt-6 text-center text-sm text-base-content/70">
                   Already have an account?{" "}
-                  <a href="#" onClick={() => setRegister(false)} className="text-primary hover:underline underline-offset-4">
+                  <a 
+                    href="#" 
+                    id="switch-to-login-link"
+                    data-testid="switch-to-login-link"
+                    onClick={() => setRegister(false)} 
+                    className="text-primary hover:underline underline-offset-4"
+                  >
                     Login
                   </a>
                 </div>
               ) : (
                 <div className="mt-6 text-center text-sm text-base-content/70">
                   Don&apos;t have an account?{" "}
-                  <a href="#" onClick={() => setRegister(true)} className="text-primary hover:underline underline-offset-4">
+                  <a 
+                    href="#" 
+                    id="switch-to-signup-link"
+                    data-testid="switch-to-signup-link"
+                    onClick={() => setRegister(true)} 
+                    className="text-primary hover:underline underline-offset-4"
+                  >
                     Sign up
                   </a>
                 </div>

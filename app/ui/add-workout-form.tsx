@@ -57,6 +57,8 @@ export default function AddWorkoutForm({ isOpen, onClose, onSubmit }: AddWorkout
                         </label>
                         <input
                             type="text"
+                            id="workout-name"
+                            data-testid="workout-name"
                             value={workoutName}
                             onChange={(e) => setWorkoutName(e.target.value)}
                             className="input input-bordered w-full"
@@ -90,6 +92,8 @@ export default function AddWorkoutForm({ isOpen, onClose, onSubmit }: AddWorkout
                         {showExerciseInput ? (
                             <div className="flex flex-col gap-2">
                                 <select
+                                    id="exercise-select"
+                                    data-testid="exercise-select"
                                     value={selectedExercise}
                                     onChange={(e) => setSelectedExercise(e.target.value)}
                                     className="select select-bordered w-full"
@@ -106,6 +110,8 @@ export default function AddWorkoutForm({ isOpen, onClose, onSubmit }: AddWorkout
                                 <div className="flex gap-2">
                                     <button
                                         type="button"
+                                        id="add-exercise-button"
+                                        data-testid="add-exercise-button"
                                         onClick={addExercise}
                                         className="btn btn-primary flex-1"
                                         disabled={!selectedExercise}
@@ -124,6 +130,8 @@ export default function AddWorkoutForm({ isOpen, onClose, onSubmit }: AddWorkout
                         ) : (
                             <button
                                 type="button"
+                                id="show-exercise-input-button"
+                                data-testid="show-exercise-input-button"
                                 onClick={() => setShowExerciseInput(true)}
                                 className="btn btn-outline btn-primary w-full"
                             >
@@ -142,6 +150,8 @@ export default function AddWorkoutForm({ isOpen, onClose, onSubmit }: AddWorkout
                         </button>
                         <button
                             type="submit"
+                            id="create-workout-button"
+                            data-testid="create-workout-button"
                             className="btn btn-primary"
                             disabled={!workoutName || exercises.length === 0}
                         >

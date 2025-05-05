@@ -41,9 +41,9 @@ export default function MacroCalculator() {
     const calculateMacros = () => {
         let bmr = 0;
         if (gender === 'male') {
-            bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+            bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
         } else {
-            bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+            bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
         }
 
         let tdee = Math.round(bmr * activityLevels[activityLevel]);
@@ -61,7 +61,7 @@ export default function MacroCalculator() {
         }
 
         // Calculate macros
-        const protein = Math.round(weight * 2); 
+        const protein = Math.round(weight * 2.2); 
         const fat = Math.round((tdee * 0.25) / 9); // 25% of calories from fat
         const carbs = Math.round((tdee - (protein * 4 + fat * 9)) / 4); // Remaining calories from carbs
 
@@ -87,17 +87,17 @@ export default function MacroCalculator() {
                                 </div>
                                 <div className="stat">
                                     <div className="stat-title">Protein</div>
-                                    <div className="stat-value text-secondary">{result.protein}g</div>
+                                    <div className="stat-value text-info">{result.protein}g</div>
                                     <div className="stat-desc">{result.protein * 4} calories</div>
                                 </div>
                                 <div className="stat">
                                     <div className="stat-title">Carbs</div>
-                                    <div className="stat-value text-accent">{result.carbs}g</div>
+                                    <div className="stat-value text-info">{result.carbs}g</div>
                                     <div className="stat-desc">{result.carbs * 4} calories</div>
                                 </div>
                                 <div className="stat">
                                     <div className="stat-title">Fat</div>
-                                    <div className="stat-value text-info">{result.fat}g</div>
+                                    <div className="stat-value text-">{result.fat}g</div>
                                     <div className="stat-desc">{result.fat * 9} calories</div>
                                 </div>
                             </div>

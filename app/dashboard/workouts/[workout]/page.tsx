@@ -108,6 +108,45 @@ export default function Page() {
         }
     };
 
+    const handleDeleteExercise = async (exercise: string) => {
+        try {
+            const userId = session?.user?.id;
+            if (!userId) throw new Error('No user session found');
+
+            // Filter out the exercise to delete
+            const updatedExercises = exercises.filter(e => e !== exercise);
+            
+            const response = await fetch(`http://localhost:8000/workouts/workouts/${workoutId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: workoutName,
+                    exercises: updatedExercises,
+                    user_id: userId
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to update workout');
+
+            // Update local state
+            setExercises(updatedExercises);
+            
+            toast({
+                title: "Success",
+                description: `Exercise "${exercise}" removed successfully!`,
+            });
+        } catch (error) {
+            console.error('Error removing exercise:', error);
+            toast({
+                title: "Error",
+                description: "Failed to remove exercise",
+                variant: "destructive",
+            });
+        }
+    };
+
     return (
         <div className="flex flex-col w-full h-full relative">
             <div className="flex-1 p-8 overflow-y-auto">
@@ -119,7 +158,11 @@ export default function Page() {
                         </div>
                     ) : (
                         <div className="w-11/12">
-                            <Menu exercises={exercises} mode="exercises" />
+                            <Menu 
+                                exercises={exercises} 
+                                mode="exercises" 
+                                onDeleteExercise={(_, exercise) => handleDeleteExercise(exercise)}
+                            />
                         </div>
                     )}
                 </div>
@@ -127,6 +170,8 @@ export default function Page() {
             <div className="sticky bottom-0 w-full p-4 bg-base-100 border-t border-base-300">
                 <div className="flex justify-between items-center max-w-2xl mx-auto px-4">
                     <button 
+                        id="start-workout-button"
+                        data-testid="start-workout-button"
                         className="btn btn-primary w-fit px-8 rounded-md hover:scale-105 transition-transform"
                         onClick={() => {
                             localStorage.setItem('workoutExercises', JSON.stringify(exercises));
@@ -136,6 +181,8 @@ export default function Page() {
                         Start Workout
                     </button>
                     <button 
+                        id="add-exercise-modal-button"
+                        data-testid="add-exercise-modal-button"
                         className="btn btn-outline w-fit px-8 rounded-md hover:scale-105 transition-transform"
                         onClick={() => setIsModalOpen(true)}
                     >

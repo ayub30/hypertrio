@@ -16,10 +16,10 @@ export default function Hero() {
                 </div>
                 <div className="flex flex-col gap-6 max-w-xl">
                     <h2 className="text-6xl font-semibold text-primary leading-tight">
-                        Optimising Your Workouts with AI
+                        Optimising Your Workouts with HyperTrio
                     </h2>
                     <p className="text-lg font-light text-base-content">
-                        Take your fitness journey to the next level with personalized, AI-driven workout plans tailored to your goals. Track, analyse, and improve your performance with insights that adapt as you progress.
+                        Take your fitness journey to the next level with personalized, Optimised workout plans tailored to your goals. Track, analyse, and improve your performance with insights that adapt as you progress.
                     </p>
                     <Link href="/register">
                         <button type="button" className="btn btn-primary w-fit px-8 rounded-md hover:scale-105 transition-transform">

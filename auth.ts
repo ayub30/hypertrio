@@ -2,7 +2,6 @@ import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { JWT } from "next-auth/jwt";
 
 // Extend the session types to include our custom fields
 declare module "next-auth" {
@@ -26,24 +25,8 @@ declare module "next-auth" {
 }
 
 // Extend the JWT type to include our custom fields
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    email: string;
-    name: string;
-    sessionId: string;
-  }
-}
+ 
 
-/**
- * NextAuth configuration with FastAPI backend integration
- * Flow:
- * 1. User submits credentials through NextAuth
- * 2. NextAuth sends credentials to FastAPI backend for verification
- * 3. FastAPI verifies credentials, creates a session, and returns user data
- * 4. NextAuth creates a JWT with the user data and session ID
- * 5. JWT is used for subsequent authenticated requests
- */
 export const {
   handlers,
   auth,
@@ -137,7 +120,7 @@ export const {
   },
   session: {
     strategy: "jwt",
-    maxAge: 60 * 30, // 30 minutes
+    maxAge: 60 * 60, // 30 minutes
   },
   debug: true, // Enable debug mode in development
 });

@@ -26,7 +26,6 @@ def create_session(user_id: str, role: str = "user"):
     session_id = secrets.token_hex(32)
     now = datetime.utcnow()
     expires = now + timedelta(days=1)  
-
     session_data = {
         "sessionId": session_id,
         "userId": user_id,
@@ -34,25 +33,17 @@ def create_session(user_id: str, role: str = "user"):
         "createdAt": now,
         "expiresAt": expires,
     }
-
     return session_data
 
 
 @router.post("/register")
 async def register_user(request: RegisterRequest):
-   
     name, email, password = request.name, request.email, request.password
-    
-    
     if len(password) < 6:
         raise HTTPException(status_code=400, detail="Password must be at least 6 characters long")
-
-    
     existing_user = await users_collection.find_one({"email": email})
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
-
-   
     hashed_password = argon2.hash(password)
     user_data = {
         "name": name,
@@ -60,19 +51,11 @@ async def register_user(request: RegisterRequest):
         "password": hashed_password,
         "createdAt": datetime.utcnow()
     }
-
     result = await users_collection.insert_one(user_data)
-    user_id = str(result.inserted_id)
-    
-    session_data = create_session(user_id)
-    await sessions_collection.insert_one(session_data)
-
-    
     return {
         "_id": user_id,
         "email": email,
         "name": name,
-        "sessionId": session_data["sessionId"]
     }
 
 
@@ -124,19 +107,15 @@ async def login_user(request: LoginRequest):
 async def validate_session(session_id: str):
     """Validate a session and return user data"""
     session = await sessions_collection.find_one({"sessionId": session_id})
-    
     if not session:
         raise HTTPException(status_code=401, detail="Invalid session")
-    
     # Check if session is expired
     if session["expiresAt"] < datetime.utcnow():
         raise HTTPException(status_code=401, detail="Session expired")
-    
     # Get user data
     user = await users_collection.find_one({"_id": ObjectId(session["userId"])})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
     return {
         "_id": str(user["_id"]),
         "email": user["email"],
@@ -144,6 +123,7 @@ async def validate_session(session_id: str):
         "role": session["role"],
         "sessionId": session_id
     }
+    
 @router.get("/user/{user_id}")
 async def get_user(user_id: str):
     try:

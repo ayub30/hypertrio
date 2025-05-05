@@ -25,6 +25,7 @@ export default function CalorieLogger() {
     const [todayEntry, setTodayEntry] = useState<DayEntry | null>(null);
     const [newFood, setNewFood] = useState('');
     const [newCalories, setNewCalories] = useState('');
+    const [editedCalorieGoal, setEditedCalorieGoal] = useState<number | null>(null);
 
     // Fetch today's entries
     const fetchTodayEntries = async () => {
@@ -47,6 +48,56 @@ export default function CalorieLogger() {
     useEffect(() => {
         fetchTodayEntries();
     }, [session]);
+
+    const handleCalorieGoalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newGoal = parseInt(e.target.value);
+        if (!isNaN(newGoal)) {
+            setEditedCalorieGoal(newGoal);
+            // Update local state immediately for responsive UI
+            if (todayEntry) {
+                setTodayEntry({
+                    ...todayEntry,
+                    calorie_goal: newGoal
+                });
+            }
+        }
+    };
+
+    const handleCalorieGoalUpdate = async () => {
+        if (editedCalorieGoal === null || !session?.user?.id) return;
+
+        try {
+            const response = await fetch(`http://localhost:8000/auth/user/${session.user.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    calorie_goal: editedCalorieGoal
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update calorie goal');
+            }
+
+            // Reset the edited value
+            setEditedCalorieGoal(null);
+            
+            toast({
+                title: 'Success',
+                description: 'Calorie goal updated',
+            });
+        } catch (error) {
+            console.error('Error updating calorie goal:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to update calorie goal',
+                variant: 'destructive',
+            });
+            
+            // Revert to original value on error
+            await fetchTodayEntries();
+        }
+    };
 
     const handleAddEntry = async () => {
         if (!newFood || !newCalories || !session?.user?.id) return;
@@ -99,8 +150,18 @@ export default function CalorieLogger() {
                     <div className="stat">
                         <div className="stat-title">Total Calories Today</div>
                         <div className="stat-value text-primary">{todayEntry?.total_calories || 0}</div>
-                        <div className="stat-desc">
-                            Target: {todayEntry?.calorie_goal || 0} kcal
+                        <div className="stat-desc flex items-center gap-2">
+                            Target: 
+                            <input 
+                                type="number" 
+                                className="input input-bordered input-sm w-20" 
+                                value={todayEntry?.calorie_goal || 0} 
+                                onChange={handleCalorieGoalChange}
+                                onBlur={handleCalorieGoalUpdate}
+                                min="0"
+                                step="100"
+                            /> 
+                            kcal
                         </div>
                     </div>
                 </div>

@@ -32,7 +32,15 @@ export default function Exercise({ name, onSetsChange }: ExerciseProps) {
         <div className="card bg-base-200 w-full max-w-xl shadow-xl m-4">
             <div className="card-body p-4">
                 <div className="flex justify-between items-center">
-                    <h2 className="card-title text-base-content">{name}</h2>
+                    <div className="flex items-center gap-2">
+                        <input 
+                            type="checkbox" 
+                            id={`exercise-checkbox-${name.toLowerCase().replace(/\s+/g, '-')}`}
+                            data-testid={`exercise-checkbox-${name.toLowerCase().replace(/\s+/g, '-')}`}
+                            className="checkbox checkbox-primary" 
+                        />
+                        <h2 className="card-title text-base-content">{name}</h2>
+                    </div>
                     <button 
                         className="btn btn-ghost btn-circle btn-sm"
                         onClick={() => setIsExpanded(!isExpanded)}
