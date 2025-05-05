@@ -53,7 +53,7 @@ async def register_user(request: RegisterRequest):
     }
     result = await users_collection.insert_one(user_data)
     return {
-        "_id": user_id,
+        "_id": str(result.inserted_id),
         "email": email,
         "name": name,
     }

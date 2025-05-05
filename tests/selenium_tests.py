@@ -76,62 +76,40 @@ class HypertrioTests(unittest.TestCase):
             self.fail(f"Element {value} not clickable within {timeout} seconds")
 
     def login(self):
-        """Helper method to log in to the application."""
         self.driver.get(f"{self.base_url}/login")
-        
-        # Take screenshot of login page
         self.driver.save_screenshot(f"screenshots/login_page_{int(time.time())}.png")
         print(f"Current URL: {self.driver.current_url}")
-        
-        # Wait for login form to load
         email_field = self.wait_for_element(By.ID, "email-input")
         password_field = self.wait_for_element(By.ID, "password-input")
-        
-        # Fill in login form
         email_field.clear()
         email_field.send_keys(self.__class__.test_email)
         password_field.clear()
         password_field.send_keys(self.__class__.test_password)
-        
-        # Take screenshot after filling form
         self.driver.save_screenshot(f"screenshots/login_form_filled_{int(time.time())}.png")
-        
-        # Find and click the login button
         login_button = self.wait_for_element_clickable(By.ID, "login-button")
         login_button.click()
-        
-        # Take screenshot after clicking login
         time.sleep(2)  # Wait a moment for any redirects
         self.driver.save_screenshot(f"screenshots/after_login_click_{int(time.time())}.png")
         print(f"URL after login click: {self.driver.current_url}")
-        
-        # Check if we're still on the login page
         if "login" in self.driver.current_url:
             print("Still on login page after clicking login button. Manually navigating to dashboard...")
             # If we're still on the login page, try to manually navigate to the dashboard
             self.driver.get(f"{self.base_url}/dashboard")
             time.sleep(2)  # Wait for page to load
             self.driver.save_screenshot(f"screenshots/manual_dashboard_navigation_{int(time.time())}.png")
-        
-        # Wait for dashboard to load or check if we're logged in
         try:
-            # First try to find the dashboard heading
             try:
                 self.wait_for_element(By.XPATH, "//h1[contains(text(), 'Dashboard')]", timeout=5)
                 print("✅ Found dashboard heading")
             except:
-                # If we can't find the dashboard heading, look for any nav links that would indicate we're logged in
                 try:
                     self.wait_for_element(By.ID, "nav-dashboard", timeout=5)
                     print("✅ Found dashboard navigation link")
                 except:
-                    # Try to find any element that would indicate we're logged in
                     self.wait_for_element(By.ID, "nav-logout", timeout=5)
-                    print("✅ Found logout button, we're logged in")
-            
+                    print("✅ Found logout button, we're logged in") 
             print("✅ Login successful")
         except Exception as e:
-            # If login fails, check for error message
             self.driver.save_screenshot(f"screenshots/login_failed_{int(time.time())}.png")
             print(f"Login failed. Current URL: {self.driver.current_url}")
             print(f"Page source snippet: {self.driver.page_source[:500]}...")
@@ -142,32 +120,20 @@ class HypertrioTests(unittest.TestCase):
                 self.fail(f"Login failed: {str(e)}")
 
     def test_01_registration_login_logout(self):
-        """Test user registration, login, and logout functionality."""
         print("\n🔍 Testing registration, login, and logout...")
         # First go to login page
         self.driver.get(f"{self.base_url}/login")
-        
-        # Find and click the signup link using the ID we added
         signup_link = self.wait_for_element_clickable(By.ID, "switch-to-signup-link")
         signup_link.click()
-        
-        # Wait a moment for the form to switch to registration mode
         time.sleep(1)
-        
-        # Wait for registration form fields to be available
-        # The form has changed to registration mode, check for name field which only appears in registration mode
         name_field = self.wait_for_element(By.ID, "name-input")
         email_field = self.wait_for_element(By.ID, "email-input")
         password_field = self.wait_for_element(By.ID, "password-input")
         confirm_password_field = self.wait_for_element(By.ID, "confirm-password-input")
-        
-        # Clear fields before typing (just in case)
         name_field.clear()
         email_field.clear()
         password_field.clear()
         confirm_password_field.clear()
-        
-        # Fill in registration form with explicit waits between inputs
         name_field.send_keys(self.__class__.test_name)
         time.sleep(0.5)
         email_field.send_keys(self.__class__.test_email)
@@ -176,57 +142,38 @@ class HypertrioTests(unittest.TestCase):
         time.sleep(0.5)
         confirm_password_field.send_keys(self.__class__.test_password)
         time.sleep(0.5)
-        
-        # Find and click the register button
         register_button = self.wait_for_element_clickable(By.ID, "register-button")
         register_button.click()
-        
-        # Check if we're still on the registration page
-        time.sleep(2)  # Wait a moment for any redirects
         self.driver.save_screenshot(f"screenshots/after_registration_click_{int(time.time())}.png")
         print(f"URL after registration click: {self.driver.current_url}")
-        
-        # Check if we're still on the login page
         if "login" in self.driver.current_url:
             print("Still on login page after clicking register button. Manually navigating to dashboard...")
-            # If we're still on the login page, try to manually navigate to the dashboard
             self.driver.get(f"{self.base_url}/dashboard")
-            time.sleep(2)  # Wait for page to load
+            time.sleep
+            2
             self.driver.save_screenshot(f"screenshots/manual_dashboard_navigation_after_register_{int(time.time())}.png")
-        
-        # Check if registration was successful
         try:
-            # First try to find the dashboard heading
             try:
                 self.wait_for_element(By.XPATH, "//h1[contains(text(), 'Dashboard')]", timeout=5)
                 print("✅ Found dashboard heading")
             except:
-                # If we can't find the dashboard heading, look for any nav links that would indicate we're logged in
                 try:
                     self.wait_for_element(By.ID, "nav-dashboard", timeout=5)
                     print("✅ Found dashboard navigation link")
                 except:
-                    # Try to find any element that would indicate we're logged in
                     self.wait_for_element(By.ID, "nav-logout", timeout=5)
                     print("✅ Found logout button, we're logged in")
             
             print("✅ Registration successful")
-            
-            # Now test logout
             logout_button = self.wait_for_element_clickable(By.ID, "nav-logout")
             logout_button.click()
-            
-            # Verify we're logged out (redirected to login page)
             self.wait_for_element(By.XPATH, "//h1[contains(text(), 'Login')]")
             self.assertTrue("login" in self.driver.current_url)
             print("✅ Logout successful")
-            
-            # Now test login with the registered credentials
             self.login()
             print("✅ Registration, login, and logout test passed")
             
         except Exception as e:
-            # If registration fails, check for error message
             self.driver.save_screenshot(f"screenshots/registration_failed_{int(time.time())}.png")
             print(f"Registration failed. Current URL: {self.driver.current_url}")
             print(f"Page source snippet: {self.driver.page_source[:500]}...")
